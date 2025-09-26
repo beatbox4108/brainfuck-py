@@ -11,8 +11,6 @@
 # Copyright (c) 2025 beayon
 # Licensed under the MIT License
 
-import sys
-import io
 class BrainfuckVM:
     BINARY_CHARCODES = {
         "+": 0b000,
@@ -31,12 +29,12 @@ class BrainfuckVM:
         self.maxmem = maxmem
 
     
-    def exec(self, code, *, instant_flash:bool = True, stdin: io.TextIOBase = sys.stdin, stdout: io.TextIOBase = sys.stdout):
-        self.exec_compiled(self.compile(code), instant_flash=instant_flash, stdin=stdin, stdout=stdout)
+    def exec(self, code):
+        self.exec_compiled(self.compile(code))
     
     def compile(self, code)-> bytes: return bytes(bytearray(i for i in (self.BINARY_CHARCODES.get(c) for c in code) if i != None))
 
-    def exec_compiled(self, bincode: bytes, *, instant_flash:bool = True, stdin: io.TextIOBase = sys.stdin, stdout: io.TextIOBase = sys.stdout):
+    def exec_compiled(self, bincode: bytes):
         code_pointer = 0
         loop_stacks = []
         while True:
@@ -55,11 +53,8 @@ class BrainfuckVM:
             elif opcode == 0b011:
                 self.pointer = max(self.pointer - 1, 0)
             elif opcode == 0b100:
-                stdout.write(chr(self.mem[self.pointer]))
-                if instant_flash: stdout.flush()
-            elif opcode == 0b101:
-                val = ord(stdin.read(1))
-                self.mem[self.pointer] = val
+                print(chr(self.mem[self.pointer]),end="")
+            elif opcode == 0b101:pass
             elif opcode == 0b110:
                 if self.mem[self.pointer] == 0:
                     counter = 1
@@ -76,4 +71,3 @@ class BrainfuckVM:
                 else:
                     code_pointer = loop_stacks.pop() - 1
             code_pointer += 1
-        stdout.flush()
